@@ -1,4 +1,4 @@
-package com.accountregister
+package com.agp
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -23,7 +23,7 @@ class AccountStorageModule(context: ReactApplicationContext) : ReactContextBaseJ
 
   private companion object {
     const val MODULE_NAME = "AccountStorage"
-    const val PREFERENCES_NAME = "account_register_preferences"
+    const val PREFERENCES_NAME = "agp_preferences"
     const val DATA_KEY = "records_json_v1"
   }
 }

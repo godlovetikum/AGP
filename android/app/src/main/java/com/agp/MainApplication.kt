@@ -1,4 +1,4 @@
-package com.accountregister
+package com.agp
 
 import android.app.Application
 import com.facebook.react.PackageList

@@ -98,7 +98,7 @@ export interface AccountStore {
 }
 ```
 
-The screen loads records inside `useEffect` when it starts and saves after adding or archiving. The Android preference name is `account_register_preferences` and the data key is `records_json_v1`. The value is a JSON array of non-secret records.
+The screen loads records inside `useEffect` when it starts and saves after adding or archiving. The Android preference name is `agp_preferences` and the data key is `records_json_v1`. The value is a JSON array of non-secret records.
 
 Future tests should cover these cases:
 

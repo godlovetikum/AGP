@@ -6,7 +6,7 @@ This repository is designed so the Android phone is used for editing and GitHub 
 
 Create an empty GitHub repository. Do not add a README, `.gitignore`, or license during creation because this package already contains them.
 
-Extract the ZIP, open the `AccountRegister` directory, and push the repository contents to the `main` branch. If your Android terminal cannot run Git, upload the extracted files through the GitHub web interface while preserving the directory names. The `.git` directory is included for reference, but the remote repository only needs the working-tree files.
+Extract the ZIP, open the `AGP` directory, and push the repository contents to the `main` branch. If your Android terminal cannot run Git, upload the extracted files through the GitHub web interface while preserving the directory names. The `.git` directory is included for reference, but the remote repository only needs the working-tree files.
 
 ## 2. Start the build
 

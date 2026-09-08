@@ -1,4 +1,4 @@
-package com.accountregister
+package com.agp
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
