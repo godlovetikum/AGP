@@ -3,9 +3,9 @@ import TestRenderer, {act} from 'react-test-renderer';
 import App from '../App';
 
 describe('Account Register', () => {
-  it('shows the sample record and can open the add form', () => {
+  it('shows the sample record and can open the add form', async () => {
     let renderer: TestRenderer.ReactTestRenderer;
-    act(() => {
+    await act(async () => {
       renderer = TestRenderer.create(<App />);
     });
 

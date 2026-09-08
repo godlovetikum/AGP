@@ -2,7 +2,7 @@
 
 Account Register is a small **bare React Native** Android starter for managing social-media account information offline. It is designed for a social-media account manager who needs a structured register rather than a free-form notes application.
 
-The starter currently includes a working in-memory interface. You can search sample records, add a record, see structured account fields, and archive a record. The app does not yet persist data after a process restart. That boundary is intentional: the first scaffold keeps the native dependency surface small so the Android build remains easy to understand.
+The app includes a compact register interface. You can search records, add a record, see structured account fields, archive a record, and keep non-secret records across restarts. Persistence uses one small manually registered Android module backed by `SharedPreferences`; there is no auto-linked storage dependency.
 
 ## Chosen baseline
 
@@ -19,7 +19,7 @@ The starter currently includes a working in-memory interface. You can search sam
 | TypeScript | `^5.8.3` |
 | Java for CI | JDK 17, matching React Native guidance |
 | Navigation | Not installed in the starter |
-| Database | Not installed in the starter |
+| Database | None; non-secret JSON is stored in Android `SharedPreferences` |
 | Expo | Not used |
 
 React Native 0.86.3 is a deliberate pin. It gives this project a modern Android template while avoiding an unbounded `latest` dependency. Do not upgrade React Native as part of a feature change. Treat an upgrade as a separate maintenance project.
@@ -43,4 +43,8 @@ The detailed teaching guide is in [`docs/BUILD_GUIDE.md`](docs/BUILD_GUIDE.md). 
 
 ## Important MVP limitation
 
-The password field is present only to reserve the product shape. This starter stores it in React state and does not persist it securely. Do not enter real passwords. The first persistence implementation should either omit the password field or add proper encrypted storage as a separate, explicitly tested feature.
+The password field is present only to reserve the product shape. It is deliberately cleared before saving. Do not enter real passwords. Secure password storage is a separate future feature.
+
+## GitHub Actions build behavior
+
+The workflow does not depend on a committed Gradle wrapper JAR or debug keystore. It installs Gradle 9.3.1, runs the Gradle `wrapper` task, generates the wrapper JAR, creates `android/app/debug.keystore` when absent, then runs the checks and assembles the APK. The generated APK and generated Android tooling are uploaded as workflow artifacts.

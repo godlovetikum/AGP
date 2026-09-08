@@ -4,9 +4,9 @@
 
 This project is a personal, offline-first register for the social-media accounts and projects that you manage for other people. It is not intended to replace a password manager. The first version stores useful account context such as the client, project, platform, account name, email address, username, status, and notes.
 
-The starter deliberately does **not** claim to be a finished production application. It demonstrates the user interface and the main interaction loop. Records currently live in React component state, which means they disappear when the application process is restarted. The password input is present to reserve the future data shape, but it is not safe for real passwords. Do not enter real credentials into this version.
+The starter deliberately does **not** claim to be a finished production application. It demonstrates the user interface and the main interaction loop, and it persists non-secret records locally through a small manually registered Android bridge. The password input is present to reserve the future data shape, but it is cleared before saving. Do not enter real passwords.
 
-The next implementation step is persistence. That should be added only after you understand the current screen and the Android build, because persistence introduces a storage decision and more tests.
+The next implementation steps are editing, filtering, and backup. Secure password storage remains intentionally out of scope.
 
 ## 2. Why bare React Native
 
@@ -31,7 +31,7 @@ The scaffold was generated with React Native `0.86.3`. React Native `0.86` is a 
 | Kotlin | `2.1.20` | Generated Android template value |
 | Java in CI | JDK 17 | React Native documentation recommends JDK 17 and warns about higher versions |
 | Navigation | None yet | One main screen does not need a navigation library |
-| Storage | None yet | Avoid native auto-linking until the data model is settled |
+| Storage | Android `SharedPreferences` through a manual bridge | Keeps the dependency graph small and avoids auto-linking |
 | UI kit | None yet | React Native core controls are enough for the first screen |
 
 The important rule is to change one layer at a time. Do not simultaneously upgrade React Native, the Android Gradle Plugin, Kotlin, and several native libraries. If you need to upgrade, create a separate branch, record the old and new versions, and build the empty app before adding feature changes.
@@ -53,6 +53,8 @@ The repository is a normal JavaScript project plus an Android project.
 | `android/app/src/main/AndroidManifest.xml` | Android app declaration and permissions |
 | `android/app/src/main/java/.../MainActivity.kt` | Android activity that hosts React Native |
 | `android/app/src/main/java/.../MainApplication.kt` | Android application setup and package loading |
+| `android/app/src/main/java/.../AccountStorageModule.kt` | Native bridge that reads and writes non-secret JSON |
+| `android/app/src/main/java/.../AccountStoragePackage.kt` | Manual package registration for that bridge |
 | `android/gradlew` | Project-local Gradle command used by CI |
 | `__tests__/` | Jest tests |
 | `.github/workflows/` | Automated checks and APK build instructions |
@@ -65,7 +67,7 @@ The screen is intentionally written as one file so you can trace the complete wo
 
 `AccountRecord` is a TypeScript type. It describes the shape of one register entry. TypeScript does not run on the phone. Babel removes the type annotations during bundling and the TypeScript compiler checks them before that.
 
-`initialRecords` is sample data. `emptyDraft` is the blank form used when creating a new record.
+`sampleRecord` is sample data. `emptyDraft` is the blank form used when creating a new record.
 
 `useState` stores changing values. The `records` state holds the current list. The `query` state holds the search text. The `showForm` state controls whether the form is visible. The `draft` state holds the values currently being typed.
 
@@ -83,9 +85,9 @@ A navigation library is useful when there are multiple screens. This version has
 
 When the project grows, use React Navigation rather than inventing a URL-like system. A likely future version would contain a register screen, a record detail screen, a client screen, and a settings screen. Add navigation when the screens are real, not as a placeholder.
 
-## 7. Persistence plan
+## 7. Persistence implementation
 
-The next feature is local persistence. The simplest teaching-friendly option is a small storage adapter around `@react-native-async-storage/async-storage`. It stores strings, so the records would be serialized with `JSON.stringify` and read with `JSON.parse`. This is acceptable for non-secret fields in a personal MVP, but it is not a secure password store.
+The app uses Android `SharedPreferences` through a two-file native module. `AccountStorageModule.kt` exposes `load()` and `save(value)` to JavaScript. `AccountStoragePackage.kt` makes the module available, and `MainApplication.kt` adds the package manually. This is deliberately not an npm dependency, so there is no auto-linking configuration to debug.
 
 A storage adapter keeps the rest of the app independent from the chosen library:
 
@@ -96,9 +98,9 @@ export interface AccountStore {
 }
 ```
 
-The screen would load records inside `useEffect` when it starts and save after a successful add, edit, archive, or restore operation. The storage key should be a single named constant such as `account-register.records.v1`.
+The screen loads records inside `useEffect` when it starts and saves after adding or archiving. The Android preference name is `account_register_preferences` and the data key is `records_json_v1`. The value is a JSON array of non-secret records.
 
-Before implementing storage, add tests for these cases:
+Future tests should cover these cases:
 
 1. A new installation loads an empty or sample-safe state.
 2. A saved record comes back after a reload.
@@ -106,7 +108,7 @@ Before implementing storage, add tests for these cases:
 4. A record with missing required fields is rejected.
 5. Archived records remain available but can be hidden by a filter.
 
-If passwords are ever added, do not place them in ordinary AsyncStorage. Use a purpose-built secure storage design and write tests for lock behavior, backup behavior, clipboard clearing, and background screenshots. Until then, the password field should remain unused.
+If passwords are ever added, do not place them in ordinary preferences. Use a purpose-built secure storage design and write tests for lock behavior, backup behavior, clipboard clearing, and background screenshots. Until then, the password field is discarded by `addRecord`.
 
 ## 8. Suggested future data model
 
@@ -139,7 +141,7 @@ The root `android/build.gradle` defines versions shared by Android modules. The 
 
 The React Native Gradle plugin bundles the JavaScript for non-debug builds. A debug build normally connects to Metro on your development computer. A release build includes a bundled JavaScript file, so GitHub Actions can produce an installable APK without your laptop running Metro.
 
-The generated `debug.keystore` is for local debug installation. It is not a release signing key. If you later publish the application or distribute a trusted release, create and protect a real release keystore outside the repository. Do not commit private signing keys.
+The workflow generates `android/gradle/wrapper/gradle-wrapper.jar` and `android/app/debug.keystore` after checkout. The generated debug keystore is for personal testing and is not a release signing key. If you later publish the application, create and protect a real release keystore outside the repository. Do not commit private signing keys.
 
 ## 10. Local commands
 
@@ -168,11 +170,11 @@ If Android reports that no SDK is found, set `ANDROID_HOME` to the Android SDK d
 
 ## 11. GitHub Actions build
 
-The workflow in `.github/workflows/android.yml` uses Ubuntu, Node 22, JDK 17, and the Gradle wrapper. It installs npm dependencies with `npm ci`, runs linting, runs Jest, checks TypeScript, and assembles the release APK.
+The workflow in `.github/workflows/android.yml` uses Ubuntu, Node 22, JDK 17, and Android SDK 36. It installs Gradle 9.3.1, runs `gradle wrapper` to generate the wrapper JAR, creates a debug keystore when one is absent, installs npm dependencies with `npm ci`, runs linting, runs Jest, checks TypeScript, and assembles the release APK.
 
 The APK is uploaded as a workflow artifact. It is not automatically published to Google Play. Open the completed GitHub Actions run, open the artifact named `account-register-release-apk`, and download the ZIP containing the APK.
 
-The workflow does not need Expo, EAS, a server, or a signing secret for the current personal debug-oriented project. A release APK generated without a private release signing key is suitable for personal testing but is not a store distribution strategy.
+The workflow does not need Expo, EAS, a server, or a signing secret for the current personal testing project. The release APK is signed with the generated debug key because the app is not being published. This is not a store distribution strategy.
 
 ## 12. A practical feature order
 
@@ -180,8 +182,8 @@ Build features in this order:
 
 | Step | Feature | Why it comes here |
 | --- | --- | --- |
-| 1 | Persist non-secret records | Makes the register useful after restarting |
-| 2 | Edit and detail view | Corrects mistakes and shows the complete record |
+| 1 | Edit and detail view | Corrects mistakes and shows the complete record |
+| 2 | Export and import | Protects against device loss without adding a server |
 | 3 | Status and filters | Keeps the daily list manageable |
 | 4 | Clients and projects screens | Removes repeated names when the register grows |
 | 5 | Encrypted backup and restore | Protects against device loss without adding a server |
@@ -208,7 +210,7 @@ Avoid deleting `node_modules`, Gradle caches, or lockfiles as a first reaction. 
 
 ## 14. Definition of done for the next milestone
 
-The next milestone is complete when you can add a non-secret record, close the app, reopen it, and see the record again. It must pass lint, TypeScript, Jest, and the GitHub Actions Android build. It must also have an import/export decision written down before backup files are introduced.
+The current milestone is complete when you can add a non-secret record, close the app, reopen it, and see the record again. The repository includes source-level validation and a GitHub Actions Android build. The next milestone is editing and backup.
 
 ## References
 

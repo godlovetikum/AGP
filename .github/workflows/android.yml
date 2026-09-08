@@ -33,6 +33,28 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
 
+      - name: Set up Gradle command for wrapper generation
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+
+      - name: Generate Gradle wrapper and wrapper JAR
+        run: gradle wrapper --gradle-version 9.3.1 --distribution-type bin
+
+      - name: Generate debug signing keystore when absent
+        run: |
+          if [ ! -f android/app/debug.keystore ]; then
+            keytool -genkeypair -v \
+              -keystore android/app/debug.keystore \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
       - name: Install JavaScript dependencies
         run: npm ci
 
@@ -54,4 +76,13 @@ jobs:
         with:
           name: account-register-release-apk
           path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+      - name: Upload generated Android tooling
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-android-tooling
+          path: |
+            android/gradle/wrapper/gradle-wrapper.jar
+            android/app/debug.keystore
           if-no-files-found: error
