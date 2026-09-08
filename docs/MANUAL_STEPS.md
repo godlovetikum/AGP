@@ -28,9 +28,9 @@ No Gradle installation, Android SDK, Java installation, wrapper-JAR generation, 
 
 ## 3. Download the APK
 
-Wait for the workflow to finish successfully. Open the completed run and scroll to **Artifacts**. Download `account-register-release-apk`. Extract the downloaded artifact ZIP to obtain `app-release.apk`.
+Wait for the workflow to finish successfully. Open the completed run and scroll to **Artifacts**. Download `agp-release-apk`. Extract the downloaded artifact ZIP to obtain `app-release.apk`.
 
-The workflow also uploads `generated-android-tooling`, which contains the generated wrapper JAR and debug keystore for inspection. Those generated files are not required for installing the APK.
+The workflow also uploads `agp-generated-android-tooling`, which contains the generated wrapper JAR and debug keystore for inspection. Those generated files are not required for installing the APK.
 
 ## 4. Install the APK
 

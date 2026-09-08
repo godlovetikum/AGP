@@ -39,6 +39,7 @@ jobs:
           gradle-version: '9.3.1'
 
       - name: Generate Gradle wrapper and wrapper JAR
+        working-directory: android
         run: gradle wrapper --gradle-version 9.3.1 --distribution-type bin
 
       - name: Generate debug signing keystore when absent
@@ -74,14 +75,14 @@ jobs:
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
-          name: account-register-release-apk
+          name: agp-release-apk
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
 
       - name: Upload generated Android tooling
         uses: actions/upload-artifact@v4
         with:
-          name: generated-android-tooling
+          name: agp-generated-android-tooling
           path: |
             android/gradle/wrapper/gradle-wrapper.jar
             android/app/debug.keystore

@@ -172,7 +172,7 @@ If Android reports that no SDK is found, set `ANDROID_HOME` to the Android SDK d
 
 The workflow in `.github/workflows/android.yml` uses Ubuntu, Node 22, JDK 17, and Android SDK 36. It installs Gradle 9.3.1, runs `gradle wrapper` to generate the wrapper JAR, creates a debug keystore when one is absent, installs npm dependencies with `npm ci`, runs linting, runs Jest, checks TypeScript, and assembles the release APK.
 
-The APK is uploaded as a workflow artifact. It is not automatically published to Google Play. Open the completed GitHub Actions run, open the artifact named `account-register-release-apk`, and download the ZIP containing the APK.
+The APK is uploaded as a workflow artifact. It is not automatically published to Google Play. Open the completed GitHub Actions run, open the artifact named `agp-release-apk`, and download the ZIP containing the APK.
 
 The workflow does not need Expo, EAS, a server, or a signing secret for the current personal testing project. The release APK is signed with the generated debug key because the app is not being published. This is not a store distribution strategy.
 
