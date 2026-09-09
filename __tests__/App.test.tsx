@@ -11,7 +11,7 @@ describe('AGP register', () => {
     });
 
     expect(renderer.root.findByProps({children: 'AGP'})).toBeTruthy();
-    expect(renderer.root.findByProps({children: 'OFFLINE REGISTER'})).toBeTruthy();
+    expect(renderer.root.findByProps({children: 'OFFLINE FILING SYSTEM'})).toBeTruthy();
     expect(renderer.root.findByProps({children: '+ Add'})).toBeTruthy();
 
     const addButton = renderer.root.findByProps({testID: 'add-account-button'});
@@ -22,7 +22,7 @@ describe('AGP register', () => {
       await Promise.resolve();
     });
 
-    expect(renderer.root.findByProps({children: 'New account'})).toBeTruthy();
+    expect(renderer.root.findByProps({children: 'New account record'})).toBeTruthy();
     expect(renderer.root.findByProps({children: 'Save record'})).toBeTruthy();
   });
 });
