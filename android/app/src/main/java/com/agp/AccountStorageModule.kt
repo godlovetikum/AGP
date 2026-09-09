@@ -1,8 +1,16 @@
 package com.agp
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -22,6 +30,20 @@ class AccountStorageModule(context: ReactApplicationContext) : ReactContextBaseJ
   @ReactMethod fun secureSave(id: String, value: String, promise: Promise) { try { preferences.edit().putString(SECRET_PREFIX + id, encrypt(value)).apply(); promise.resolve(true) } catch (error: Exception) { promise.reject("SECURE_SAVE_FAILED", error) } }
   @ReactMethod fun secureLoad(id: String, promise: Promise) { try { promise.resolve(decrypt(preferences.getString(SECRET_PREFIX + id, "") ?: "")) } catch (error: Exception) { promise.reject("SECURE_LOAD_FAILED", error) } }
   @ReactMethod fun secureDelete(id: String, promise: Promise) { preferences.edit().remove(SECRET_PREFIX + id).apply(); promise.resolve(true) }
+  @ReactMethod fun setClipboard(value: String, promise: Promise) { val clipboard = reactApplicationContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager; val clip = ClipData.newPlainText("AGP", value); clipboard.setPrimaryClip(clip); Handler(Looper.getMainLooper()).postDelayed({ if (clipboard.hasPrimaryClip() && clipboard.primaryClip?.getItemAt(0)?.text == value) clipboard.clearPrimaryClip() }, 30_000); promise.resolve(true) }
+  @ReactMethod fun authenticateBiometric(promise: Promise) {
+    val activity = currentActivity
+    if (activity == null) { promise.reject("NO_ACTIVITY", "AGP is not attached to an Activity"); return }
+    val availability = BiometricManager.from(activity).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+    if (availability != BiometricManager.BIOMETRIC_SUCCESS) { promise.resolve(false); return }
+    val executor = ContextCompat.getMainExecutor(activity)
+    val prompt = BiometricPrompt(activity, executor, object : BiometricPrompt.AuthenticationCallback() {
+      override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) { promise.resolve(true) }
+      override fun onAuthenticationError(errorCode: Int, errString: CharSequence) { promise.resolve(false) }
+      override fun onAuthenticationFailed() { }
+    })
+    prompt.authenticate(BiometricPrompt.PromptInfo.Builder().setTitle("Unlock AGP").setSubtitle("Verify your identity").setNegativeButtonText("Use PIN").build())
+  }
   @ReactMethod fun getPin(promise: Promise) = promise.resolve(preferences.getString(PIN_KEY, "") ?: "")
   @ReactMethod fun setPin(value: String, promise: Promise) { preferences.edit().putString(PIN_KEY, if (value.isBlank()) "" else hash(value)).apply(); promise.resolve(true) }
   @ReactMethod fun verifyPin(value: String, promise: Promise) { promise.resolve(value.isNotBlank() && hash(value) == preferences.getString(PIN_KEY, "")) }
