@@ -16,6 +16,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Show checked-out project layout
+        run: |
+          pwd
+          printf '%s\n' '--- repository root ---'
+          find . -maxdepth 2 -type f | sort | sed -n '1,100p'
+          printf '%s\n' '--- Android Gradle files ---'
+          test -f android/settings.gradle
+          test -f android/build.gradle
+          test -f android/app/build.gradle
+          ls -la android
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -39,11 +50,19 @@ jobs:
           gradle-version: '9.3.1'
 
       - name: Generate Gradle wrapper and wrapper JAR
-        working-directory: android
-        run: gradle wrapper --gradle-version 9.3.1 --distribution-type bin
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cd "$GITHUB_WORKSPACE/android"
+          test -f settings.gradle
+          test -f build.gradle
+          gradle wrapper --gradle-version 9.3.1 --distribution-type bin
+          test -f gradle/wrapper/gradle-wrapper.jar
 
       - name: Generate debug signing keystore when absent
+        shell: bash
         run: |
+          set -euxo pipefail
           if [ ! -f android/app/debug.keystore ]; then
             keytool -genkeypair -v \
               -keystore android/app/debug.keystore \
@@ -55,6 +74,7 @@ jobs:
               -validity 10000 \
               -dname "CN=Android Debug,O=Android,C=US"
           fi
+          test -f android/app/debug.keystore
 
       - name: Install JavaScript dependencies
         run: npm ci
@@ -69,8 +89,11 @@ jobs:
         run: npm test -- --runInBand
 
       - name: Build release APK
-        working-directory: android
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cd "$GITHUB_WORKSPACE/android"
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload release APK
         uses: actions/upload-artifact@v4
