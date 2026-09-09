@@ -1,6 +1,6 @@
 # Account Register
 
-Account Register is a small **bare React Native** Android starter for managing social-media account information offline. It is designed for a social-media account manager who needs a structured register rather than a free-form notes application.
+AGP is a **bare React Native** offline digital account register and filing system. It organizes accounts, platforms, services, subscriptions, projects, clients, and related links in one structured local reference system. Social-media accounts are one supported category, not the product boundary.
 
 The app includes a compact register interface. You can search records, add a record, see structured account fields, archive a record, and keep non-secret records across restarts. Persistence uses one small manually registered Android module backed by `SharedPreferences`; there is no auto-linked storage dependency.
 
@@ -18,7 +18,7 @@ The app includes a compact register interface. You can search records, add a rec
 | Kotlin | `2.1.20` |
 | TypeScript | `^5.8.3` |
 | Java for CI | JDK 17, matching React Native guidance |
-| Navigation | Not installed in the starter |
+| Navigation | React Navigation native stack |
 | Database | None; non-secret JSON is stored in Android `SharedPreferences` |
 | Expo | Not used |
 
@@ -41,9 +41,9 @@ The Android command needs either an Android emulator or a USB-connected Android 
 
 The detailed teaching guide is in [`docs/BUILD_GUIDE.md`](docs/BUILD_GUIDE.md). It explains the folder structure, JavaScript-to-TypeScript transition, Android build files, data model, persistence options, testing, and GitHub Actions.
 
-## Important MVP limitation
+## Security boundary
 
-The password field is present only to reserve the product shape. It is deliberately cleared before saving. Do not enter real passwords. Secure password storage is a separate future feature.
+Passwords are never stored in ordinary register JSON. They use the native secure-storage bridge when available, and reveal/copy actions remain explicit. Backup, sharing, and export are intentionally deferred while the offline register foundation is completed.
 
 ## GitHub Actions build behavior
 

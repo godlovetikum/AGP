@@ -20,7 +20,7 @@ import {
 } from '../domain/models';
 
 export const REGISTER_STORAGE_KEY = 'agp.register.v2';
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 
 const timestamp = () => new Date().toISOString();
 const text = (value: unknown) => typeof value === 'string' ? value : '';
@@ -45,7 +45,7 @@ const migrateLegacyRecord = (raw: Record<string, unknown>, data: RegisterData, i
 
   const clientResult = findOrCreate(next.clients, clientName, 'client', id => ({id, name: clientName, notes: ''}));
   next = {...next, clients: clientResult.items};
-  const projectResult = findOrCreate(next.projects as Project[], projectName, 'project', id => ({id, name: projectName, clientId: clientResult.id, notes: '', status: defaultRecordStatus}));
+  const projectResult = findOrCreate(next.projects as Project[], projectName, 'project', id => ({id, name: projectName, description: '', clientId: clientResult.id, notes: '', status: defaultRecordStatus}));
   next = {...next, projects: projectResult.items};
   const platformResult = findOrCreate(next.platforms, platformName, 'platform', id => ({id, name: platformName}) as Platform);
   next = {...next, platforms: platformResult.items};

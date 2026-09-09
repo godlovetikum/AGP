@@ -1,5 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Alert, AppState, StyleSheet} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {LockScreen} from './LockScreen';
 import {DashboardScreen} from './DashboardScreen';
@@ -15,32 +17,34 @@ import {useRegisterStore} from '../hooks/useRegisterStore';
 import {nativeStore} from '../services/nativeStore';
 import {AccountRecord, RegisterData} from '../domain/models';
 
-type Screen = 'dashboard' | 'records' | 'form' | 'detail' | 'settings' | 'categories' | 'platforms' | 'projects' | 'clients';
+export type RootStackParamList = {Dashboard: undefined; Register: undefined; AccountForm: undefined; AccountDetail: undefined; Settings: undefined; Categories: undefined; Platforms: undefined; Projects: undefined; Clients: undefined};
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const screenOptions = {headerShown: false, contentStyle: {backgroundColor: '#f5f7fb'}};
 
 export default function AppShell() {
   const {data, ready, hasPin, setPin, saveRecord, updateRecord, removeRecord, persist} = useRegisterStore();
-  const [screen, setScreen] = useState<Screen>('dashboard');
   const [selected, setSelected] = useState<AccountRecord>();
   const [locked, setLocked] = useState(false);
   const [pin, setPinValue] = useState('');
-  useEffect(() => { const subscription = AppState.addEventListener('change', state => { if (state !== 'active' && hasPin) setLocked(true); }); return () => subscription.remove(); }, [hasPin]);
+  useEffect(() => {const subscription = AppState.addEventListener('change', state => {if (state !== 'active' && hasPin) setLocked(true);}); return () => subscription.remove();}, [hasPin]);
   if (!ready) return <SafeAreaView style={styles.safe}/>;
-  if (locked) return <SafeAreaView style={styles.safe}><LockScreen hasPin={hasPin} pin={pin} onChangePin={setPinValue} onUnlock={async () => { if (nativeStore && !(await nativeStore.verifyPin(pin))) return Alert.alert('Incorrect PIN'); setLocked(false); setPinValue(''); }} onBiometric={async () => { if (nativeStore && await nativeStore.authenticateBiometric()) setLocked(false); }}/></SafeAreaView>;
+  if (locked) return <SafeAreaView style={styles.safe}><LockScreen hasPin={hasPin} pin={pin} onChangePin={setPinValue} onUnlock={async () => {if (nativeStore && !(await nativeStore.verifyPin(pin))) return Alert.alert('Incorrect PIN'); setLocked(false); setPinValue('');}} onBiometric={async () => {if (nativeStore && await nativeStore.authenticateBiometric()) setLocked(false);}}/></SafeAreaView>;
 
-  const add = () => { setSelected(undefined); setScreen('form'); };
-  const openRecord = (record: AccountRecord) => { setSelected(record); setScreen('detail'); };
-  const save = async (value: Partial<AccountRecord> & {accountName: string; platformId: string; password?: string}) => { const now = new Date().toISOString(); const record: AccountRecord = {...selected, ...value, id: selected?.id || `${Date.now()}`, accountName: value.accountName, platformId: value.platformId, email: value.email || '', username: value.username || '', tags: value.tags || [], notes: value.notes || '', status: value.status || 'active', createdAt: selected?.createdAt || now, updatedAt: now}; await saveRecord({...record, password: value.password}); setSelected(record); setScreen('detail'); };
-  const saveData = async (next: RegisterData) => { await persist(next); };
-  const updateSelected = async (changes: Partial<AccountRecord>) => { if (!selected) return; const updated = await updateRecord(selected.id, changes); const next = updated.records.find(record => record.id === selected.id); if (next) setSelected(next); };
+  const saveData = async (next: RegisterData) => {await persist(next);};
+  const save = async (value: Partial<AccountRecord> & {accountName: string; platformId: string; password?: string}) => {const now = new Date().toISOString(); const primaryLink = value.links?.find(link => link.isPrimary) || value.links?.[0]; const record: AccountRecord = {...selected, ...value, id: selected?.id || `${Date.now()}`, accountName: value.accountName, platformId: value.platformId, accountUrl: primaryLink?.url || undefined, email: value.email || '', username: value.username || '', tags: value.tags || [], notes: value.notes || '', status: value.status || 'active', createdAt: selected?.createdAt || now, updatedAt: now}; await saveRecord({...record, password: value.password}); setSelected(record);};
+  const updateSelected = async (changes: Partial<AccountRecord>) => {if (!selected) return; const saved = await updateRecord(selected.id, changes); setSelected(saved.records.find(record => record.id === selected.id));};
+  const add = (navigation: {navigate: (route: 'AccountForm') => void}) => {setSelected(undefined); navigation.navigate('AccountForm');};
 
-  if (screen === 'records') return <SafeAreaView style={styles.safe}><RegisterScreen data={data} onBack={() => setScreen('dashboard')} onAdd={add} onOpen={openRecord}/></SafeAreaView>;
-  if (screen === 'form') return <SafeAreaView style={styles.safe}><AccountFormScreen record={selected} data={data} onBack={() => setScreen(selected ? 'detail' : 'records')} onSave={save}/></SafeAreaView>;
-  if (screen === 'detail' && selected) return <SafeAreaView style={styles.safe}><AccountDetailScreen record={selected} data={data} onBack={() => setScreen('records')} onEdit={() => setScreen('form')} onUpdate={updateSelected} onDelete={async () => { await removeRecord(selected); setScreen('records'); }}/></SafeAreaView>;
-  if (screen === 'categories') return <SafeAreaView style={styles.safe}><CategoriesScreen data={data} onBack={() => setScreen('settings')} onSave={saveData}/></SafeAreaView>;
-  if (screen === 'platforms') return <SafeAreaView style={styles.safe}><PlatformsScreen data={data} onBack={() => setScreen('settings')} onSave={saveData}/></SafeAreaView>;
-  if (screen === 'projects') return <SafeAreaView style={styles.safe}><ProjectsScreen data={data} onBack={() => setScreen('settings')} onSave={saveData}/></SafeAreaView>;
-  if (screen === 'clients') return <SafeAreaView style={styles.safe}><ClientsScreen data={data} onBack={() => setScreen('settings')} onSave={saveData}/></SafeAreaView>;
-  if (screen === 'settings') return <SafeAreaView style={styles.safe}><SettingsScreen data={data} hasPin={hasPin} onBack={() => setScreen('dashboard')} onCategories={() => setScreen('categories')} onPlatforms={() => setScreen('platforms')} onProjects={() => setScreen('projects')} onClients={() => setScreen('clients')} onSetPin={async value => { await setPin(value); setScreen('dashboard'); }}/></SafeAreaView>;
-  return <SafeAreaView style={styles.safe}><DashboardScreen data={data} onRecords={() => setScreen('records')} onAdd={add} onSettings={() => setScreen('settings')}/></SafeAreaView>;
+  return <NavigationContainer><Stack.Navigator initialRouteName="Dashboard" screenOptions={screenOptions}>
+    <Stack.Screen name="Dashboard">{({navigation}) => <DashboardScreen data={data} onRecords={() => navigation.navigate('Register')} onAdd={() => add(navigation)} onSettings={() => navigation.navigate('Settings')}/>}</Stack.Screen>
+    <Stack.Screen name="Register">{({navigation}) => <RegisterScreen data={data} onBack={() => navigation.navigate('Dashboard')} onAdd={() => add(navigation)} onOpen={record => {setSelected(record); navigation.navigate('AccountDetail');}}/>}</Stack.Screen>
+    <Stack.Screen name="AccountForm">{({navigation}) => <AccountFormScreen record={selected} data={data} onBack={() => navigation.goBack()} onSave={async value => {await save(value); navigation.navigate('AccountDetail');}}/>}</Stack.Screen>
+    <Stack.Screen name="AccountDetail">{({navigation}) => selected ? <AccountDetailScreen record={selected} data={data} onBack={() => navigation.goBack()} onEdit={() => navigation.navigate('AccountForm')} onUpdate={updateSelected} onDelete={async () => {await removeRecord(selected); navigation.navigate('Register');}}/> : null}</Stack.Screen>
+    <Stack.Screen name="Settings">{({navigation}) => <SettingsScreen data={data} hasPin={hasPin} onBack={() => navigation.navigate('Dashboard')} onCategories={() => navigation.navigate('Categories')} onPlatforms={() => navigation.navigate('Platforms')} onProjects={() => navigation.navigate('Projects')} onClients={() => navigation.navigate('Clients')} onSetPin={async value => {await setPin(value); navigation.navigate('Dashboard');}}/>}</Stack.Screen>
+    <Stack.Screen name="Categories">{({navigation}) => <CategoriesScreen data={data} onBack={() => navigation.goBack()} onSave={saveData}/>}</Stack.Screen>
+    <Stack.Screen name="Platforms">{({navigation}) => <PlatformsScreen data={data} onBack={() => navigation.goBack()} onSave={saveData}/>}</Stack.Screen>
+    <Stack.Screen name="Projects">{({navigation}) => <ProjectsScreen data={data} onBack={() => navigation.goBack()} onSave={saveData}/>}</Stack.Screen>
+    <Stack.Screen name="Clients">{({navigation}) => <ClientsScreen data={data} onBack={() => navigation.goBack()} onSave={saveData}/>}</Stack.Screen>
+  </Stack.Navigator></NavigationContainer>;
 }
 const styles = StyleSheet.create({safe: {flex: 1, backgroundColor: '#f5f7fb'}});

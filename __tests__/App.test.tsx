@@ -11,7 +11,7 @@ describe('AGP register', () => {
     });
 
     expect(renderer.root.findByProps({children: 'AGP'})).toBeTruthy();
-    expect(renderer.root.findByProps({children: 'OFFLINE FILING SYSTEM'})).toBeTruthy();
+    expect(renderer.root.findByProps({children: 'OFFLINE DIGITAL ACCOUNT REGISTER'})).toBeTruthy();
     expect(renderer.root.findByProps({children: '+ Add'})).toBeTruthy();
 
     const addButton = renderer.root.findByProps({testID: 'add-account-button'});

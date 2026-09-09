@@ -2,11 +2,11 @@
 
 ## 1. Purpose and current boundary
 
-This project is a personal, offline-first register for the social-media accounts and projects that you manage for other people. It is not intended to replace a password manager. The first version stores useful account context such as the client, project, platform, account name, email address, username, status, and notes.
+This project is an offline-first digital account register and filing system. It is designed to organize accounts, services, platforms, subscriptions, projects, clients, and generic user-named links. Social-media accounts are one category among many. It is not intended to replace a password manager.
 
-The starter deliberately does **not** claim to be a finished production application. It demonstrates the user interface and the main interaction loop, and it persists non-secret records locally through a small manually registered Android bridge. The password input is present to reserve the future data shape, but it is cleared before saving. Do not enter real passwords.
+The app persists ordinary records locally through a small manually registered Android bridge. Passwords are kept outside ordinary register JSON and use the native secure-storage bridge when available. Sharing and export are intentionally deferred.
 
-The next implementation steps are editing, filtering, and backup. Secure password storage remains intentionally out of scope.
+The implementation is organized around decoupled entities, route-based navigation, reusable generic-link editing, search/filtering, local security, and independently managed account, platform, project, category, and client records.
 
 ## 2. Why bare React Native
 
