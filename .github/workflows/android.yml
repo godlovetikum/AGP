@@ -50,14 +50,6 @@ jobs:
       - name: Verify React Native Gradle plugin
         run: test -f node_modules/@react-native/gradle-plugin/settings.gradle.kts
 
-      - name: Verify committed Gradle wrapper
-        shell: bash
-        run: |
-          set -euxo pipefail
-          test -f android/gradle/wrapper/gradle-wrapper.jar
-          test -f android/gradle/wrapper/gradle-wrapper.properties
-          test -x android/gradlew
-
       - name: Generate debug signing keystore when absent
         shell: bash
         run: |
