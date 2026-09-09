@@ -49,6 +49,12 @@ jobs:
         with:
           gradle-version: '9.3.1'
 
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Verify React Native Gradle plugin
+        run: test -f node_modules/@react-native/gradle-plugin/settings.gradle.kts
+
       - name: Generate Gradle wrapper and wrapper JAR
         shell: bash
         run: |
@@ -75,9 +81,6 @@ jobs:
               -dname "CN=Android Debug,O=Android,C=US"
           fi
           test -f android/app/debug.keystore
-
-      - name: Install JavaScript dependencies
-        run: npm ci
 
       - name: Lint
         run: npm run lint
