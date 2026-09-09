@@ -81,6 +81,8 @@ jobs:
         run: |
           set -euxo pipefail
           cd "$GITHUB_WORKSPACE/android"
+          chmod +x gradlew
+          test -x gradlew
           ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload release APK
