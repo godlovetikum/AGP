@@ -34,7 +34,7 @@ class AccountStorageModule(context: ReactApplicationContext) : ReactContextBaseJ
   @ReactMethod fun secureDelete(id: String, promise: Promise) { preferences.edit().remove(SECRET_PREFIX + id).apply(); promise.resolve(true) }
   @ReactMethod fun setClipboard(value: String, promise: Promise) { val clipboard = reactApplicationContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager; val clip = ClipData.newPlainText("AGP", value); clipboard.setPrimaryClip(clip); Handler(Looper.getMainLooper()).postDelayed({ if (clipboard.hasPrimaryClip() && clipboard.primaryClip?.getItemAt(0)?.text == value) clipboard.clearPrimaryClip() }, 30_000); promise.resolve(true) }
   @ReactMethod fun authenticateBiometric(promise: Promise) {
-    val activity = currentActivity as? Activity
+    val activity = reactApplicationContext.currentActivity as? Activity
     if (activity == null) { promise.reject("NO_ACTIVITY", "AGP is not attached to an Activity"); return }
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) { promise.resolve(false); return }
     val keyguard = activity.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
