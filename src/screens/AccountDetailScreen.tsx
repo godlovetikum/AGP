@@ -1,8 +1,83 @@
 import React, {useState} from 'react';
-import {Alert, Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
-import {AccountRecord, RegisterData} from '../domain/models';
+import {Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {AccountRecord, EMPTY_VALUE_LABEL, RegisterData} from '../domain/models';
 import {nativeStore} from '../services/nativeStore';
-const date = (value?: string) => value ? new Date(value).toLocaleString([], {day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit'}) : 'Not yet';
-export function AccountDetailScreen({record, data, onBack, onEdit, onDelete}: {record: AccountRecord; data: RegisterData; onBack: () => void; onEdit: () => void; onDelete: () => void}) { const [secret, setSecret] = useState(''); const client = data.clients.find(item => item.id === record.clientId)?.name || 'Unknown client'; const project = data.projects.find(item => item.id === record.projectId)?.name || 'No project'; const platform = data.platforms.find(item => item.id === record.platformId)?.name || 'Other'; return <ScrollView contentContainerStyle={styles.page}><Pressable onPress={onBack}><Text style={styles.back}>‹ Account register</Text></Pressable><Text style={styles.platform}>{platform}</Text><Text style={styles.title}>{record.accountName}</Text><View style={styles.card}><Row label="Client" value={client}/><Row label="Project" value={project}/><Row label="Email" value={record.email || '—'}/><Row label="Username" value={record.username || '—'}/><Row label="Status" value={record.status}/><Row label="Added" value={date(record.createdAt)}/><Row label="Updated" value={date(record.updatedAt)}/><Row label="Last verified" value={date(record.lastVerifiedAt)}/><Row label="Tags" value={record.tags.join(', ') || '—'}/><Text style={styles.notes}>{record.notes || 'No notes.'}</Text>{record.passwordRef ? <><Row label="Password" value={secret || 'Stored securely'}/><View style={styles.actions}><Pressable style={styles.secondary} onPress={async () => setSecret(secret ? '' : (nativeStore ? await nativeStore.secureLoad(record.passwordRef!) : ''))}><Text style={styles.secondaryText}>{secret ? 'Hide password' : 'Reveal password'}</Text></Pressable>{secret ? <Pressable style={styles.secondary} onPress={() => nativeStore?.setClipboard(secret)}><Text style={styles.secondaryText}>Copy password</Text></Pressable> : null}</View></> : null}</View><Pressable style={styles.primary} onPress={onEdit}><Text style={styles.primaryText}>Edit record</Text></Pressable><Pressable style={styles.danger} onPress={() => Alert.alert('Delete record?', 'This cannot be undone.', [{text: 'Cancel'}, {text: 'Delete', style: 'destructive', onPress: onDelete}])}><Text style={styles.dangerText}>Delete permanently</Text></Pressable></ScrollView>; }
+
+const date = (value?: string) => value ? new Date(value).toLocaleString([], {day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit'}) : EMPTY_VALUE_LABEL;
+const valueOrEmpty = (value?: string) => value || EMPTY_VALUE_LABEL;
+
+export function AccountDetailScreen({record, data, onBack, onEdit, onDelete}: {record: AccountRecord; data: RegisterData; onBack: () => void; onEdit: () => void; onDelete: () => void}) {
+  const [secret, setSecret] = useState('');
+  const client = data.clients.find(item => item.id === record.clientId)?.name;
+  const project = data.projects.find(item => item.id === record.projectId);
+  const platform = data.platforms.find(item => item.id === record.platformId);
+  const category = data.categories.find(item => item.id === record.categoryId)?.name;
+  const openLink = async (url?: string) => {
+    if (!url) return;
+    if (await Linking.canOpenURL(url)) await Linking.openURL(url);
+    else Alert.alert('Unable to open link', url);
+  };
+  return <ScrollView contentContainerStyle={styles.page}>
+    <Pressable onPress={onBack}><Text style={styles.back}>‹ Account register</Text></Pressable>
+    <Text style={styles.eyebrow}>{platform?.name || EMPTY_VALUE_LABEL}</Text>
+    <Text style={styles.title}>{record.accountName || EMPTY_VALUE_LABEL}</Text>
+    <Text style={styles.subtitle}>{record.email || EMPTY_VALUE_LABEL}</Text>
+
+    <Section title="Account identity" />
+    <View style={styles.card}>
+      <Row label="Account name" value={valueOrEmpty(record.accountName)} />
+      <Row label="Email address" value={valueOrEmpty(record.email)} />
+      <Row label="Username" value={valueOrEmpty(record.username)} />
+      <LinkRow label="Account link" url={record.accountUrl} onPress={() => openLink(record.accountUrl)} />
+    </View>
+
+    <Section title="Platform and relationships" />
+    <View style={styles.card}>
+      <Row label="Platform" value={valueOrEmpty(platform?.name)} />
+      <Row label="Category" value={valueOrEmpty(category)} />
+      <Row label="Project" value={valueOrEmpty(project?.name)} />
+      <LinkRow label="Project link" url={project?.websiteUrl} onPress={() => openLink(project?.websiteUrl)} />
+      <Row label="Client" value={valueOrEmpty(client)} />
+      <Row label="Owner" value={valueOrEmpty(record.owner)} />
+      <Row label="Related accounts" value={record.relatedAccountIds?.length ? `${record.relatedAccountIds.length} linked record(s)` : EMPTY_VALUE_LABEL} />
+    </View>
+
+    <Section title="Subscription and billing" />
+    <View style={styles.card}>
+      <Row label="Subscription status" value={valueOrEmpty(record.subscriptionStatus)} />
+      <Row label="Subscription plan" value={valueOrEmpty(record.subscriptionPlan)} />
+      <Row label="Subscription start date" value={valueOrEmpty(record.subscriptionStartDate)} />
+      <Row label="Subscription expiry date" value={valueOrEmpty(record.subscriptionExpiryDate)} />
+      <Row label="Renewal date" value={valueOrEmpty(record.renewalDate)} />
+      <Row label="Billing cycle" value={valueOrEmpty(record.billingCycle)} />
+      <Row label="Payment notes" value={valueOrEmpty(record.paymentNotes)} />
+    </View>
+
+    <Section title="Status and review" />
+    <View style={styles.card}>
+      <Row label="Account status" value={valueOrEmpty(record.status)} />
+      <Row label="Priority" value={valueOrEmpty(record.priority)} />
+      <Row label="Added" value={date(record.createdAt)} />
+      <Row label="Last updated" value={date(record.updatedAt)} />
+      <Row label="Last verified" value={date(record.lastVerifiedAt)} />
+      <Row label="Tags" value={record.tags.length ? record.tags.join(', ') : EMPTY_VALUE_LABEL} />
+    </View>
+
+    <Section title="Notes" />
+    <View style={styles.card}><Text style={styles.notes}>{valueOrEmpty(record.notes)}</Text></View>
+
+    <Section title="Sensitive information" />
+    <View style={styles.card}>
+      {record.passwordRef ? <><Row label="Password" value={secret || 'Stored securely'} /><View style={styles.actions}><Pressable style={styles.secondary} onPress={async () => setSecret(secret ? '' : (nativeStore ? await nativeStore.secureLoad(record.passwordRef!) : ''))}><Text style={styles.secondaryText}>{secret ? 'Hide password' : 'Reveal password'}</Text></Pressable>{secret ? <Pressable style={styles.secondary} onPress={() => nativeStore?.setClipboard(secret)}><Text style={styles.secondaryText}>Copy password</Text></Pressable> : null}</View></> : <Row label="Password" value={EMPTY_VALUE_LABEL} />}
+    </View>
+
+    <Pressable style={styles.primary} onPress={onEdit}><Text style={styles.primaryText}>Edit record</Text></Pressable>
+    <Pressable style={styles.danger} onPress={() => Alert.alert('Delete record?', 'This cannot be undone.', [{text: 'Cancel'}, {text: 'Delete', style: 'destructive', onPress: onDelete}])}><Text style={styles.dangerText}>Delete permanently</Text></Pressable>
+  </ScrollView>;
+}
+
+function Section({title}: {title: string}) { return <Text style={styles.section}>{title}</Text>; }
 function Row({label, value}: {label: string; value: string}) { return <View style={styles.row}><Text style={styles.label}>{label}</Text><Text style={styles.value}>{value}</Text></View>; }
-const styles = StyleSheet.create({page: {padding: 20, paddingBottom: 50}, back: {color: '#5267d9', fontWeight: '700'}, platform: {color: '#5267d9', fontWeight: '800', textTransform: 'uppercase', marginTop: 24}, title: {fontSize: 27, fontWeight: '800', color: '#172033', marginVertical: 10}, card: {backgroundColor: '#fff', borderRadius: 16, padding: 17, borderWidth: 1, borderColor: '#e2e7f0'}, row: {paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#edf0f4'}, label: {fontSize: 11, color: '#87909c', textTransform: 'uppercase', fontWeight: '800'}, value: {fontSize: 16, color: '#172033', marginTop: 3}, notes: {color: '#4e596b', lineHeight: 22, marginTop: 16}, actions: {flexDirection: 'row', gap: 8, marginTop: 10}, secondary: {borderWidth: 1, borderColor: '#dce2ec', borderRadius: 10, padding: 10}, secondaryText: {color: '#5267d9', fontWeight: '700'}, primary: {backgroundColor: '#5267d9', borderRadius: 12, padding: 15, marginTop: 18}, primaryText: {color: '#fff', textAlign: 'center', fontWeight: '800'}, danger: {padding: 15, alignItems: 'center'}, dangerText: {color: '#b34848', fontWeight: '800'}});
+function LinkRow({label, url, onPress}: {label: string; url?: string; onPress: () => void}) { return <View style={styles.row}><Text style={styles.label}>{label}</Text>{url ? <Pressable onPress={onPress}><Text style={styles.link}>{url}</Text></Pressable> : <Text style={styles.value}>{EMPTY_VALUE_LABEL}</Text>}</View>; }
+
+const styles = StyleSheet.create({page: {padding: 20, paddingBottom: 50}, back: {color: '#5267d9', fontWeight: '700'}, eyebrow: {color: '#5267d9', fontWeight: '800', textTransform: 'uppercase', marginTop: 24}, title: {fontSize: 27, fontWeight: '800', color: '#172033', marginTop: 8}, subtitle: {fontSize: 16, color: '#687386', marginTop: 5}, section: {fontSize: 13, fontWeight: '800', color: '#5267d9', textTransform: 'uppercase', letterSpacing: 1, marginTop: 22, marginBottom: 10}, card: {backgroundColor: '#fff', borderRadius: 16, padding: 17, borderWidth: 1, borderColor: '#e2e7f0'}, row: {paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#edf0f4'}, label: {fontSize: 11, color: '#87909c', textTransform: 'uppercase', fontWeight: '800'}, value: {fontSize: 16, color: '#172033', marginTop: 3}, link: {fontSize: 15, color: '#5267d9', marginTop: 3, textDecorationLine: 'underline'}, notes: {color: '#4e596b', lineHeight: 22}, actions: {flexDirection: 'row', gap: 8, marginTop: 10}, secondary: {borderWidth: 1, borderColor: '#dce2ec', borderRadius: 10, padding: 10}, secondaryText: {color: '#5267d9', fontWeight: '700'}, primary: {backgroundColor: '#5267d9', borderRadius: 12, padding: 15, marginTop: 18}, primaryText: {color: '#fff', textAlign: 'center', fontWeight: '800'}, danger: {padding: 15, alignItems: 'center'}, dangerText: {color: '#b34848', fontWeight: '800'}});
