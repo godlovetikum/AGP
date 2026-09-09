@@ -9,3 +9,9 @@ Intentionally deferred: backup-related work only. The existing JSON backup scree
 Validation performed for this pass: `git diff --check` and `npm run typecheck`. No Gradle or APK build was run locally. The GitHub Actions runner remains responsible for Android compilation and will validate the AndroidX biometric dependency and Kotlin code.
 
 Date and sorting support is also implemented. Each record stores `createdAt`, `updatedAt`, and optional `lastVerifiedAt`; the detail view displays Added, Updated, and Verified date/time values; the register provides Newest added, Oldest added, Recently updated, Least recently updated, and Recently verified sorting modes.
+
+## Advanced filing-system pass
+
+The source is now organized under `src/domain`, `src/storage`, `src/screens`, `src/components`, and `src/services`. Domain filtering supports global search across ordinary metadata, field-specific email/username/account-name/notes operators, client/project/platform selection, multiple statuses, tags, added/updated/verified date ranges, and never-verified queries. Sorting supports date modes plus account, client, platform, project, and email alphabetical modes. Saved views persist a filter state and sort mode locally and can be loaded or deleted from the filter panel.
+
+The UI shell remains intentionally dependency-light, using native React Native controls and the existing manually registered Android bridge. Backup behavior remains unchanged and is still excluded from this implementation phase.

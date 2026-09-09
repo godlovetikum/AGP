@@ -1,0 +1,14 @@
+export type RecordStatus = 'active' | 'paused' | 'archived';
+export type SortMode = 'newest' | 'oldest' | 'updated' | 'leastUpdated' | 'verified' | 'leastVerified' | 'accountAsc' | 'accountDesc' | 'clientAsc' | 'clientDesc' | 'platformAsc' | 'platformDesc' | 'projectAsc' | 'projectDesc' | 'emailAsc' | 'emailDesc';
+export type TextOperator = 'contains' | 'equals' | 'startsWith';
+export type DateRange = {from?: string; to?: string};
+export type AccountRecord = {id: string; clientId: string; projectId?: string; platformId: string; accountName: string; email: string; username: string; passwordRef?: string; status: RecordStatus; notes: string; tags: string[]; createdAt: string; updatedAt: string; lastVerifiedAt?: string};
+export type Client = {id: string; name: string; notes: string; archived?: boolean};
+export type Project = {id: string; clientId: string; name: string; notes: string; status: RecordStatus};
+export type Platform = {id: string; name: string; website?: string; archived?: boolean};
+export type RegisterData = {schemaVersion: 1; records: AccountRecord[]; clients: Client[]; projects: Project[]; platforms: Platform[]; tags: string[]; savedViews: SavedView[]; updatedAt: string};
+export type SavedView = {id: string; name: string; filter: FilterState; sortMode: SortMode};
+export type TextFilter = {operator: TextOperator; value: string};
+export type FilterState = {query?: string; clientId?: string; projectId?: string; platformId?: string; statuses?: RecordStatus[]; tags?: string[]; email?: TextFilter; username?: TextFilter; accountName?: TextFilter; notes?: TextFilter; addedRange?: DateRange; updatedRange?: DateRange; verifiedRange?: DateRange; neverVerified?: boolean};
+export const emptyFilter: FilterState = {statuses: ['active']};
+export const sortOptions: {id: SortMode; name: string}[] = [{id: 'newest', name: 'Newest added'}, {id: 'oldest', name: 'Oldest added'}, {id: 'updated', name: 'Recently updated'}, {id: 'leastUpdated', name: 'Least recently updated'}, {id: 'verified', name: 'Recently verified'}, {id: 'leastVerified', name: 'Least recently verified'}, {id: 'accountAsc', name: 'Account A–Z'}, {id: 'accountDesc', name: 'Account Z–A'}, {id: 'clientAsc', name: 'Client A–Z'}, {id: 'clientDesc', name: 'Client Z–A'}, {id: 'platformAsc', name: 'Platform A–Z'}, {id: 'platformDesc', name: 'Platform Z–A'}, {id: 'projectAsc', name: 'Project A–Z'}, {id: 'projectDesc', name: 'Project Z–A'}, {id: 'emailAsc', name: 'Email A–Z'}, {id: 'emailDesc', name: 'Email Z–A'}];
