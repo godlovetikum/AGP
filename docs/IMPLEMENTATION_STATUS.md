@@ -7,3 +7,5 @@ Implemented: account creation and editing, detail view, archive/restore/delete, 
 Intentionally deferred: backup-related work only. The existing JSON backup screen remains in place, but native file export/import, encrypted backups, automatic rollback, and backup sharing are not part of this pass.
 
 Validation performed for this pass: `git diff --check` and `npm run typecheck`. No Gradle or APK build was run locally. The GitHub Actions runner remains responsible for Android compilation and will validate the AndroidX biometric dependency and Kotlin code.
+
+Date and sorting support is also implemented. Each record stores `createdAt`, `updatedAt`, and optional `lastVerifiedAt`; the detail view displays Added, Updated, and Verified date/time values; the register provides Newest added, Oldest added, Recently updated, Least recently updated, and Recently verified sorting modes.
