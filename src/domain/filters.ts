@@ -25,8 +25,8 @@ export function filterRecords(records: AccountRecord[], filter: FilterState, nam
     const labels=names(record);
     const haystack=[record.accountName,record.email,record.username,record.notes,record.tags.join(' '),record.owner||'',record.accountUrl||'',labels.client,labels.project,labels.platform,labels.category||''].join(' ').toLowerCase();
     if(filter.query&&!haystack.includes(filter.query.toLowerCase().trim())) return false;
-    if(filter.clientId&&record.clientId!==filter.clientId) return false;
-    if(filter.projectId&&record.projectId!==filter.projectId) return false;
+    if(filter.clientId&&!((record.clientIds || (record.clientId ? [record.clientId] : [])).includes(filter.clientId))) return false;
+    if(filter.projectId&&!((record.projectIds || (record.projectId ? [record.projectId] : [])).includes(filter.projectId))) return false;
     if(filter.platformId&&record.platformId!==filter.platformId) return false;
     if(filter.categoryId&&record.categoryId!==filter.categoryId) return false;
     if(filter.statuses?.length&&!filter.statuses.includes(record.status)) return false;

@@ -16,12 +16,12 @@ export function RegisterScreen({data, onBack, onAdd, onOpen}: {data: RegisterDat
   const [platformId, setPlatformId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const records = useMemo(() => filterRecords(data.records, {query, statuses: status === 'all' ? undefined : [status], subscriptionStatuses: subscriptionStatus ? [subscriptionStatus] : undefined, clientId: clientId || undefined, platformId: platformId || undefined, categoryId: categoryId || undefined}, record => ({
-    client: data.clients.find(item => item.id === record.clientId)?.name || 'No client',
-    project: data.projects.find(item => item.id === record.projectId)?.name || 'No project',
+    client: data.clients.filter(item => (record.clientIds || (record.clientId ? [record.clientId] : [])).includes(item.id)).map(item => item.name).join(', ') || 'No client',
+    project: data.projects.filter(item => (record.projectIds || (record.projectId ? [record.projectId] : [])).includes(item.id)).map(item => item.name).join(', ') || 'No project',
     platform: data.platforms.find(item => item.id === record.platformId)?.name || 'Other',
     category: data.categories.find(item => item.id === record.categoryId)?.name || 'No category',
   })), [data, query, status, subscriptionStatus, clientId, platformId, categoryId]);
-  const labels = (record: AccountRecord) => ({client: data.clients.find(item => item.id === record.clientId)?.name || 'No client', project: data.projects.find(item => item.id === record.projectId)?.name || 'No project', platform: data.platforms.find(item => item.id === record.platformId)?.name || 'Other', category: data.categories.find(item => item.id === record.categoryId)?.name || 'No category'});
+  const labels = (record: AccountRecord) => ({client: data.clients.filter(item => (record.clientIds || (record.clientId ? [record.clientId] : [])).includes(item.id)).map(item => item.name).join(', ') || 'No client', project: data.projects.filter(item => (record.projectIds || (record.projectId ? [record.projectId] : [])).includes(item.id)).map(item => item.name).join(', ') || 'No project', platform: data.platforms.find(item => item.id === record.platformId)?.name || 'Other', category: data.categories.find(item => item.id === record.categoryId)?.name || 'No category'});
   return <View style={styles.root}>
     <View style={styles.topBar}><Pressable onPress={onBack}><Text style={styles.back}>‹ Dashboard</Text></Pressable><Pressable style={styles.primarySmall} onPress={onAdd}><Text style={styles.primaryText}>+ Add</Text></Pressable></View>
     <Text style={styles.title}>Account register</Text>
