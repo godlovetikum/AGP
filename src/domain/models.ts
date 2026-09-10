@@ -44,7 +44,7 @@ export type AccountRecord = {
 };
 
 export type Client = {id: string; name: string; notes: string; contacts?: ContactReference[]; websiteUrl?: string; links?: LinkReference[]; archived?: boolean; createdAt?: string; updatedAt?: string};
-export type Project = {id: string; name: string; description: string; notes: string; websiteUrl?: string; links?: LinkReference[]; clientIds?: string[]; clientId?: string; accountIds?: string[]; platformIds?: string[]; status: RecordStatus; archived?: boolean; createdAt?: string; updatedAt?: string};
+export type Project = {id: string; name: string; description: string; notes: string; websiteUrl?: string; links?: LinkReference[]; clientIds?: string[]; clientId?: string; accountIds?: string[]; status: RecordStatus; archived?: boolean; createdAt?: string; updatedAt?: string};
 export type Platform = {id: string; name: string; description?: string; categoryId?: string; websiteUrl?: string; links?: LinkReference[]; archived?: boolean; createdAt?: string; updatedAt?: string};
 export type Category = {id: string; name: string; description?: string; archived?: boolean; createdAt?: string; updatedAt?: string};
 
