@@ -24,8 +24,8 @@ describe('AGP register', () => {
     });
 
     expect(renderer.root.findByProps({children: 'New account record'})).toBeTruthy();
-    expect(renderer.root.findByProps({children: 'Save record'})).toBeTruthy();
-    expect(renderer.root.findByProps({children: 'Relationships are optional. Add them only when this account belongs to a client or project.'})).toBeTruthy();
+    expect(renderer.root.findByProps({children: 'Identity and links'})).toBeTruthy();
+    expect(renderer.root.findByProps({children: 'Category and relationships'})).toBeTruthy();
     expect(renderer.root.findAllByType(Text).length).toBeGreaterThan(0);
   });
 });

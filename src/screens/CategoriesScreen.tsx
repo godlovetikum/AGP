@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {Alert, Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {Category, RegisterData} from '../domain/models';
 import {FormField} from '../components/FormField';
+import {duplicateCategory} from '../domain/duplicates';
 
 export function CategoriesScreen({data, onBack, onSave}: {data: RegisterData; onBack: () => void; onSave: (next: RegisterData) => void}) {
   const [editing, setEditing] = useState<Category>();
@@ -12,6 +13,8 @@ export function CategoriesScreen({data, onBack, onSave}: {data: RegisterData; on
     if (!name.trim()) return Alert.alert('Category name required');
     const now = new Date().toISOString();
     const category: Category = {id: editing?.id || `category-${Date.now()}`, name: name.trim(), description: description.trim() || undefined, archived: editing?.archived || false, createdAt: editing?.createdAt || now, updatedAt: now};
+    const duplicate = duplicateCategory(data, category);
+    if (duplicate) return Alert.alert('Possible duplicate category', `${duplicate.name} already exists. Create another anyway?`, [{text: 'Cancel'}, {text: 'Create anyway', onPress: () => onSave({...data, categories: [...data.categories.filter(item => item.id !== category.id), category]})}]);
     onSave({...data, categories: [...data.categories.filter(item => item.id !== category.id), category]});
     begin();
   };
