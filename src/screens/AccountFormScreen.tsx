@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react';
+import React, {useState} from 'react';
 import {Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
 import {AccountRecord, RegisterData, RecordStatus, SubscriptionStatus, Priority, BillingCycle} from '../domain/models';
 import {FormField} from '../components/FormField';

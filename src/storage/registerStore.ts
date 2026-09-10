@@ -11,7 +11,6 @@ import {
   defaultBillingCycle,
   defaultPriority,
   defaultRecordStatus,
-  defaultSubscriptionStatus,
   emptyRegisterData,
   normalizeBillingCycle,
   normalizePriority,

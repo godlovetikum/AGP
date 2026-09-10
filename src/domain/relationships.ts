@@ -1,4 +1,4 @@
-import {AccountRecord, Client, Project, RegisterData} from './models';
+import {Client, Project, RegisterData} from './models';
 const unique = (ids: string[] = []) => Array.from(new Set(ids.filter(Boolean)));
 export function setAccountRelations(data: RegisterData, accountId: string, clientIds: string[], projectIds: string[]): RegisterData {
   const clients = unique(clientIds); const projects = unique(projectIds);
