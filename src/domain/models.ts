@@ -14,6 +14,7 @@ export type AccountRecord = {
   id: string;
   accountName: string;
   email: string;
+  phoneNumber?: string;
   username: string;
   platformId: string;
   categoryId?: string;
@@ -70,7 +71,7 @@ export const normalizePriority = (value: unknown): Priority => ['low', 'normal',
 export const normalizeBillingCycle = (value: unknown): BillingCycle | undefined => ['monthly', 'annual', 'oneTime', 'custom'].includes(String(value)) ? value as BillingCycle : undefined;
 export const currentSchemaVersion = 3;
 export const emptyRegisterData = (now = new Date().toISOString()): RegisterData => ({schemaVersion: currentSchemaVersion, records: [], clients: [{id: 'personal', name: 'Personal', notes: '', contacts: []}], projects: [], platforms: defaultPlatforms, categories: defaultCategories, tags: [], owners: defaultOwners, subscriptionPlans: defaultSubscriptionPlans, savedViews: [], updatedAt: now});
-export const emptyAccountRecord = (now = new Date().toISOString()): AccountRecord => ({id: '', accountName: '', email: '', username: '', platformId: '', status: defaultRecordStatus, subscriptionStatus: defaultSubscriptionStatus, priority: defaultPriority, notes: '', tags: [], createdAt: now, updatedAt: now});
+export const emptyAccountRecord = (now = new Date().toISOString()): AccountRecord => ({id: '', accountName: '', email: '', phoneNumber: '', username: '', platformId: '', status: defaultRecordStatus, subscriptionStatus: defaultSubscriptionStatus, priority: defaultPriority, notes: '', tags: [], createdAt: now, updatedAt: now});
 export const coerceRegisterData = (value: Partial<RegisterData>): RegisterData => ({...emptyRegisterData(), ...value, schemaVersion: currentSchemaVersion, records: value.records || [], clients: value.clients?.length ? value.clients : emptyRegisterData().clients, projects: value.projects || [], platforms: value.platforms?.length ? value.platforms : defaultPlatforms, categories: value.categories?.length ? value.categories : defaultCategories, tags: value.tags || [], owners: value.owners?.length ? value.owners : defaultOwners, subscriptionPlans: value.subscriptionPlans?.length ? value.subscriptionPlans : defaultSubscriptionPlans, savedViews: value.savedViews || []});
 export const createLink = (label: string, url: string, isPrimary = false): LinkReference => ({id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, label, url, isPrimary});
 export const isSubscriptionExpiring = (record: AccountRecord, now = Date.now(), withinDays = 30) => {if (!record.subscriptionExpiryDate) return false; const expiry = Date.parse(record.subscriptionExpiryDate); return expiry >= now && expiry <= now + withinDays * 86400000;};

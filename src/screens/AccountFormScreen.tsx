@@ -21,6 +21,7 @@ const initialValue = (record: AccountRecord | undefined, data: RegisterData): Fo
   ...(record || {}),
   accountName: record?.accountName || '',
   email: record?.email || '',
+  phoneNumber: record?.phoneNumber || '',
   username: record?.username || '',
   accountUrl: record?.accountUrl || '',
   links: record?.links || (record?.accountUrl ? [{id: `${record.id}-primary`, label: 'Primary link', url: record.accountUrl, isPrimary: true}] : []),
@@ -63,16 +64,17 @@ export function AccountFormScreen({record, data, onBack, onSave, onCreateRelated
     if (duplicate) return Alert.alert('Possible duplicate account', `${duplicate.accountName} already uses this category, platform, and email. Create another anyway?`, [{text: 'Cancel'}, {text: 'Create anyway', onPress: () => onSave({...value, tags: normalizeTags(value.tagsText), password: value.password || undefined})}]);
     onSave({...value, tags: normalizeTags(value.tagsText), password: value.password || undefined});
   };
-  const field = (label: string, key: keyof FormState, props: {placeholder?: string; multiline?: boolean; keyboardType?: 'default' | 'email-address' | 'url' | 'number-pad'; secureTextEntry?: boolean} = {}) => <View><FormField label={label} value={String(value[key] || '')} onChangeText={next => update(key, next as never)} {...props}/>{errors[String(key)] ? <Text style={styles.error}>{errors[String(key)]}</Text> : null}</View>;
+  const field = (label: string, key: keyof FormState, props: {placeholder?: string; multiline?: boolean; keyboardType?: 'default' | 'email-address' | 'url' | 'number-pad' | 'phone-pad'; secureTextEntry?: boolean} = {}) => <View><FormField label={label} value={String(value[key] || '')} onChangeText={next => update(key, next as never)} {...props}/>{errors[String(key)] ? <Text style={styles.error}>{errors[String(key)]}</Text> : null}</View>;
   return <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
     <Pressable onPress={onBack}><Text style={styles.back}>‹ Back</Text></Pressable>
     <Text style={styles.title}>{record ? 'Edit account' : 'New account record'}</Text>
-    <Text style={styles.hint}>Account name and email identify the record. Other fields add filing and operational context.</Text>
+    <Text style={styles.hint}>Account name, email, or phone identify the record. Other fields add filing and operational context.</Text>
     <View style={styles.sectionMenu}><SectionButton label="Identity and links" active={section === 'identity'} onPress={() => setSection('identity')} /><SectionButton label="Category and relationships" active={section === 'filing'} onPress={() => setSection('filing')} /><SectionButton label="Subscription and billing" active={section === 'subscription'} onPress={() => setSection('subscription')} /><SectionButton label="Status and review" active={section === 'review'} onPress={() => setSection('review')} /><SectionButton label="Notes and save" active={section === 'notes'} onPress={() => setSection('notes')} /></View>
 
     {section === 'identity' ? <><Section title="Account identity" />
     {field('Account name *', 'accountName', {placeholder: 'Example: ChatGPT Pro'})}
     {field('Email address', 'email', {placeholder: 'login@example.com', keyboardType: 'email-address'})}
+    {field('Phone number', 'phoneNumber', {placeholder: '+1 555 0100', keyboardType: 'phone-pad'})}
     {field('Username', 'username', {placeholder: 'Optional platform username'})}
     <LinksEditor links={value.links} onChange={links => update('links', links)} /></> : null}
 
